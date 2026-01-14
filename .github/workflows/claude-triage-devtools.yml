@@ -79,13 +79,26 @@ jobs:
 
             - name: Create MCP config for Chrome DevTools
               run: |
-                  # Create MCP config with CHROME_PATH passed to the server
+                  # Create MCP config with CHROME_PATH and permissive flags for CI sandbox
+                  # Uses --chrome-arg to pass Chrome flags (per chrome-devtools-mcp docs)
+                  # These flags grant maximum browser permissions since CI is isolated
                   cat > /tmp/mcp-config.json << EOF
                   {
                     "mcpServers": {
                       "chrome-devtools": {
                         "command": "npx",
-                        "args": ["-y", "chrome-devtools-mcp@latest", "--headless", "--isolated"],
+                        "args": [
+                          "-y", "chrome-devtools-mcp@latest",
+                          "--headless",
+                          "--isolated",
+                          "--accept-insecure-certs",
+                          "--chrome-arg=--no-sandbox",
+                          "--chrome-arg=--disable-setuid-sandbox",
+                          "--chrome-arg=--disable-web-security",
+                          "--chrome-arg=--disable-features=IsolateOrigins,site-per-process",
+                          "--chrome-arg=--allow-running-insecure-content",
+                          "--chrome-arg=--autoplay-policy=no-user-gesture-required"
+                        ],
                         "env": {
                           "CHROME_PATH": "${CHROME_PATH}"
                         }
