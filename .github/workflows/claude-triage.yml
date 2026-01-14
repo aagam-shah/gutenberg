@@ -1,10 +1,17 @@
-name: Claude Issue Triage
+name: Claude Issue Triage (Chrome DevTools MCP Test)
 
 on:
     issues:
         types: [opened]
     issue_comment:
         types: [created]
+    # Allow manual trigger for testing
+    workflow_dispatch:
+        inputs:
+            issue_number:
+                description: 'Issue number to triage'
+                required: true
+                default: '74447'
 
 # Disable permissions for all available scopes by default.
 # Any needed permissions should be configured at the job level.
@@ -15,7 +22,7 @@ permissions: {}
 # - An issue is created and then someone comments before it finishes
 # - Multiple comments are made quickly
 concurrency:
-    group: claude-triage-${{ github.event.issue.number }}
+    group: claude-triage-${{ github.event.issue.number || github.event.inputs.issue_number }}
     cancel-in-progress: true
 
 jobs:
@@ -30,8 +37,9 @@ jobs:
             issues: write
             pull-requests: write
             id-token: write
-        # Run on new issues OR when @claude is mentioned in a comment
+        # Run on new issues OR when @claude is mentioned in a comment OR manual trigger
         if: |
+            github.event_name == 'workflow_dispatch' ||
             github.event_name == 'issues' ||
             (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude'))
         steps:
@@ -41,20 +49,21 @@ jobs:
                   fetch-depth: 1
                   show-progress: ${{ runner.debug == '1' && 'true' || 'false' }}
 
-            - name: Install Playwright browsers
-              run: npx playwright install --with-deps firefox
+            # Chrome is pre-installed on ubuntu-latest runners
+            - name: Verify Chrome installation
+              run: google-chrome --version
 
             - name: Install WordPress Playground CLI
               run: npm install -g @wp-playground/cli
 
-            - name: Create MCP config for CI
+            - name: Create MCP config for CI (Chrome DevTools)
               run: |
                   cat > /tmp/mcp-config.json << 'EOF'
                   {
                     "mcpServers": {
-                      "playwright": {
+                      "chrome-devtools": {
                         "command": "npx",
-                        "args": ["-y", "@playwright/mcp", "--headless"]
+                        "args": ["-y", "chrome-devtools-mcp@latest"]
                       },
                       "context7": {
                         "command": "npx",
@@ -64,24 +73,37 @@ jobs:
                   }
                   EOF
 
+            - name: Set issue number
+              id: issue
+              run: |
+                  if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+                    echo "number=${{ github.event.inputs.issue_number }}" >> $GITHUB_OUTPUT
+                  else
+                    echo "number=${{ github.event.issue.number }}" >> $GITHUB_OUTPUT
+                  fi
+
             - name: Run Claude Triage
               uses: anthropics/claude-code-action@v1
               env:
                   GITHUB_REPOSITORY: ${{ github.repository }}
                   GITHUB_EVENT_NAME: ${{ github.event_name }}
-                  GITHUB_ISSUE_NUMBER: ${{ github.event.issue.number }}
+                  GITHUB_ISSUE_NUMBER: ${{ steps.issue.outputs.number }}
+                  # Enable telemetry to track token usage
+                  CLAUDE_CODE_ENABLE_TELEMETRY: '1'
               with:
                   anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
                   show_full_output: true
                   prompt: |
                       # GitHub Context
                       REPO: ${{ github.repository }}
-                      ISSUE NUMBER: ${{ github.event.issue.number }}
+                      ISSUE NUMBER: ${{ steps.issue.outputs.number }}
                       EVENT: ${{ github.event_name }}
                       ACTOR: ${{ github.actor }}
 
                       # Instructions
-                      Execute: /triage ${{ github.event.issue.number }}
+                      Execute: /triage ${{ steps.issue.outputs.number }}
+
+                      # Note: Using Chrome DevTools MCP instead of Playwright for token efficiency testing
                   claude_args: |
                       --mcp-config /tmp/mcp-config.json
-                      --allowedTools "Bash,Read,Write,Edit,Glob,Grep,Skill,mcp__playwright__browser_navigate,mcp__playwright__browser_snapshot,mcp__playwright__browser_click,mcp__playwright__browser_type,mcp__playwright__browser_press_key,mcp__playwright__browser_fill_form,mcp__playwright__browser_take_screenshot,mcp__playwright__browser_console_messages,mcp__playwright__browser_network_requests,mcp__playwright__browser_wait_for,mcp__playwright__browser_handle_dialog,mcp__playwright__browser_hover,mcp__playwright__browser_navigate_back,mcp__playwright__browser_close,mcp__context7"
+                      --allowedTools "Bash,Read,Write,Edit,Glob,Grep,Skill,mcp__chrome-devtools__new_page,mcp__chrome-devtools__navigate_page,mcp__chrome-devtools__take_snapshot,mcp__chrome-devtools__take_screenshot,mcp__chrome-devtools__click,mcp__chrome-devtools__fill,mcp__chrome-devtools__fill_form,mcp__chrome-devtools__press_key,mcp__chrome-devtools__list_console_messages,mcp__chrome-devtools__list_network_requests,mcp__chrome-devtools__wait_for,mcp__chrome-devtools__handle_dialog,mcp__chrome-devtools__hover,mcp__chrome-devtools__close_page,mcp__chrome-devtools__list_pages,mcp__chrome-devtools__select_page,mcp__context7"
