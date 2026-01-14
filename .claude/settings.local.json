@@ -18,7 +18,8 @@
       "Bash(ls:*)",
       "Bash(mkdir:*)",
       "Bash(cp:*)",
-      "mcp__playwright"
+      "mcp__playwright",
+      "Bash(.claude/bin/playground.sh:*)"
     ]
   }
 }
