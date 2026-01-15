@@ -91,3 +91,56 @@ jobs:
                   claude_args: |
                       --mcp-config /tmp/mcp-config.json
                       --allowedTools "Bash,Read,Write,Edit,Glob,Grep,Skill,mcp__playwright__browser_navigate,mcp__playwright__browser_snapshot,mcp__playwright__browser_click,mcp__playwright__browser_type,mcp__playwright__browser_press_key,mcp__playwright__browser_fill_form,mcp__playwright__browser_take_screenshot,mcp__playwright__browser_console_messages,mcp__playwright__browser_network_requests,mcp__playwright__browser_wait_for,mcp__playwright__browser_handle_dialog,mcp__playwright__browser_hover,mcp__playwright__browser_navigate_back,mcp__playwright__browser_close,mcp__context7"
+
+            - name: Upload screenshots artifact
+              id: upload_screenshots
+              uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+              if: always()
+              with:
+                  name: triage-screenshots-${{ github.event.issue.number }}
+                  path: /tmp/triage/${{ github.event.issue.number }}/screenshots/
+                  retention-days: 90
+                  if-no-files-found: ignore
+
+            - name: Update comment with screenshot links
+              if: always() && steps.upload_screenshots.outputs.artifact-id
+              uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+              with:
+                  script: |
+                      const issueNumber = ${{ github.event.issue.number }};
+                      const artifactId = '${{ steps.upload_screenshots.outputs.artifact-id }}';
+                      const runId = '${{ github.run_id }}';
+                      const repo = context.repo;
+
+                      // Find comment with placeholder
+                      const comments = await github.rest.issues.listComments({
+                        owner: repo.owner,
+                        repo: repo.repo,
+                        issue_number: issueNumber,
+                      });
+
+                      const comment = comments.data.find(c =>
+                        c.body && c.body.includes('<!-- SCREENSHOTS_PLACEHOLDER -->')
+                      );
+
+                      if (!comment) {
+                        console.log('No comment with placeholder found');
+                        return;
+                      }
+
+                      // Replace placeholder with screenshot section
+                      const screenshotSection = `### 📸 Screenshots\n\nScreenshots are available as artifacts: [View screenshots](https://github.com/${repo.owner}/${repo.repo}/actions/runs/${runId}/artifacts/${artifactId})`;
+                      const updatedBody = comment.body.replace(
+                        '<!-- SCREENSHOTS_PLACEHOLDER -->',
+                        screenshotSection
+                      );
+
+                      // Update comment
+                      await github.rest.issues.updateComment({
+                        owner: repo.owner,
+                        repo: repo.repo,
+                        comment_id: comment.id,
+                        body: updatedBody,
+                      });
+
+                      console.log(`Updated comment ${comment.id} with screenshot link`);

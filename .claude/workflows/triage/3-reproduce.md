@@ -290,3 +290,5 @@ Use `mcp__playwright__browser_snapshot` only as fallback when element cannot be 
 ```
 
 **Note**: Screenshots are only taken when the bug/error is visible. No intermediate navigation or action screenshots.
+
+**Artifact Upload**: Screenshots saved to `/tmp/triage/<issue>/screenshots/` are automatically uploaded as GitHub Actions artifacts after the triage completes. The workflow will update the issue comment with a link to download the screenshots.
