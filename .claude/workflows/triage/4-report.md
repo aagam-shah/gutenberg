@@ -46,12 +46,13 @@ Use this concise format for GitHub comments:
 
 {1-2 sentence summary of what was tested and the result}
 
+<!-- SCREENSHOTS_PLACEHOLDER -->
+
 <details>
 <summary>Evidence</summary>
 
 **Network:** `{method} {endpoint}` → {status}
 **Console:** {key errors if any}
-**Screenshots:** {count} captured (only if bug reproduced and screenshots exist)
 
 </details>
 
@@ -64,6 +65,8 @@ Use this concise format for GitHub comments:
 ---
 <sub>Automated triage via WordPress Playground</sub>
 ```
+
+**Note:** The `<!-- SCREENSHOTS_PLACEHOLDER -->` marker is required. After posting the comment, the GitHub Actions workflow will automatically replace this placeholder with a "Screenshots" section containing a link to the uploaded screenshot artifacts (if any screenshots were captured).
 
 ## 4.4 Suspect Code Areas
 
