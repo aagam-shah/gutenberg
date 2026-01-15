@@ -38,7 +38,8 @@ jobs:
         # FIX: Exclude bot comments to prevent self-triggering cancellation loop.
         # Even though concurrency group prevents cancellation, this adds defense in depth.
         if: |
-            github.event_name == 'issues' ||
+            (github.event_name == 'issues' &&
+             contains(github.event.issue.labels.*.name, '[Type] Bug')) ||
             (github.event_name == 'issue_comment' &&
              contains(github.event.comment.body, '@claude') &&
              github.event.comment.user.type != 'Bot' &&
