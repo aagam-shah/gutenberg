@@ -1,0 +1,22 @@
+{
+	"name": "@wordpress/content-guidelines-route",
+	"version": "1.0.0",
+	"private": true,
+	"route": {
+		"path": "/",
+		"page": [
+			"content-guidelines"
+		]
+	},
+	"dependencies": {
+		"@wordpress/api-fetch": "file:../../packages/api-fetch",
+		"@wordpress/blocks": "file:../../packages/blocks",
+		"@wordpress/components": "file:../../packages/components",
+		"@wordpress/data": "file:../../packages/data",
+		"@wordpress/date": "file:../../packages/date",
+		"@wordpress/element": "file:../../packages/element",
+		"@wordpress/i18n": "file:../../packages/i18n",
+		"@wordpress/icons": "file:../../packages/icons",
+		"@wordpress/notices": "file:../../packages/notices"
+	}
+}

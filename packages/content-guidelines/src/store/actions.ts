@@ -137,7 +137,7 @@ export const saveGuidelines =
 	};
 
 /**
- * Update a specific category's content.
+ * Update a specific category's content (local state only).
  *
  * @param category The category slug.
  * @param value    The new value for the category.
@@ -150,6 +150,132 @@ export const updateCategory = (
 	type: UPDATE_CATEGORY,
 	payload: { category, value },
 } );
+
+/**
+ * Extended thunk args that includes select for accessing state.
+ */
+export interface ThunkArgsWithSelect extends ThunkArgs {
+	select: {
+		getGuidelines: () => Guidelines | null;
+	};
+}
+
+/**
+ * Update a category and immediately save to the backend.
+ *
+ * @param category The category slug.
+ * @param value    The new value for the category.
+ * @return Thunk action.
+ */
+export const updateCategoryAndSave =
+	( category: string, value: CategoryGuideline | BlockGuidelines ) =>
+	async ( { dispatch, select }: ThunkArgsWithSelect ) => {
+		// First update local state
+		dispatch( { type: UPDATE_CATEGORY, payload: { category, value } } );
+
+		// Get updated guidelines from state
+		const guidelines = select.getGuidelines();
+		if ( ! guidelines ) {
+			return;
+		}
+
+		dispatch( { type: SAVE_GUIDELINES_START } );
+
+		try {
+			const method = guidelines.id ? 'PATCH' : 'POST';
+			const path = guidelines.id
+				? `/wp/v2/content-guidelines/${ guidelines.id }`
+				: '/wp/v2/content-guidelines';
+
+			const response = await apiFetch< Guidelines >( {
+				path,
+				method,
+				data: {
+					status: guidelines.status,
+					guideline_categories: guidelines.guideline_categories,
+				},
+			} );
+
+			dispatch( {
+				type: SAVE_GUIDELINES_SUCCESS,
+				payload: response,
+			} );
+
+			return response;
+		} catch ( error ) {
+			dispatch( {
+				type: SAVE_GUIDELINES_ERROR,
+				payload:
+					( error as Error ).message || 'Failed to save guidelines',
+			} );
+			throw error;
+		}
+	};
+
+/**
+ * Delete a block guideline and immediately save to the backend.
+ *
+ * @param blockName The block name to delete.
+ * @return Thunk action.
+ */
+export const deleteBlockGuidelineAndSave =
+	( blockName: string ) =>
+	async ( { dispatch, select }: ThunkArgsWithSelect ) => {
+		const guidelines = select.getGuidelines();
+		if ( ! guidelines?.guideline_categories?.blocks ) {
+			return;
+		}
+
+		// Remove the block from the blocks object
+		const { [ blockName ]: removed, ...rest } =
+			guidelines.guideline_categories.blocks;
+
+		// Update local state with the new blocks object
+		dispatch( {
+			type: UPDATE_CATEGORY,
+			payload: { category: 'blocks', value: rest },
+		} );
+
+		// Get updated guidelines and save
+		const updatedGuidelines = select.getGuidelines();
+		if ( ! updatedGuidelines ) {
+			return;
+		}
+
+		dispatch( { type: SAVE_GUIDELINES_START } );
+
+		try {
+			const method = updatedGuidelines.id ? 'PATCH' : 'POST';
+			const path = updatedGuidelines.id
+				? `/wp/v2/content-guidelines/${ updatedGuidelines.id }`
+				: '/wp/v2/content-guidelines';
+
+			const response = await apiFetch< Guidelines >( {
+				path,
+				method,
+				data: {
+					status: updatedGuidelines.status,
+					guideline_categories:
+						updatedGuidelines.guideline_categories,
+				},
+			} );
+
+			dispatch( {
+				type: SAVE_GUIDELINES_SUCCESS,
+				payload: response,
+			} );
+
+			return response;
+		} catch ( error ) {
+			dispatch( {
+				type: SAVE_GUIDELINES_ERROR,
+				payload:
+					( error as Error ).message ||
+					'Failed to delete block guideline',
+			} );
+			throw error;
+		}
+	};
 
 /**
  * Set the status of the guidelines.

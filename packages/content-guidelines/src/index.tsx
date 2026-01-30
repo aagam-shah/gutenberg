@@ -10,7 +10,7 @@ import { createRoot } from '@wordpress/element';
 import AdminPage from './components/admin-page';
 import './style.scss';
 
-// Render admin page when DOM is ready.
+// Render admin page when DOM is ready (for legacy PHP admin page).
 domReady( () => {
 	const container = document.getElementById( 'content-guidelines-admin' );
 	if ( container ) {
@@ -19,5 +19,6 @@ domReady( () => {
 	}
 } );
 
-// Export store for external use.
+// Export components and store for routes system and external use.
 export { store } from './store';
+export default AdminPage;

@@ -1,0 +1,26 @@
+{
+	"permissions": {
+		"allow": [
+			"Bash(NO_CHECKS=1 npm run build:plugin-zip:*)",
+			"mcp__context-a8c__context-a8c-load-provider",
+			"mcp__context-a8c__context-a8c-execute-tool",
+			"Bash(npm run build:*)",
+			"mcp__linear-server__list_teams",
+			"mcp__figma__get_design_context",
+			"mcp__figma__get_screenshot",
+			"mcp__playwright__browser_navigate",
+			"mcp__playwright__browser_take_screenshot",
+			"mcp__playwright__browser_wait_for",
+			"mcp__playwright__browser_click",
+			"mcp__playwright__browser_close",
+			"mcp__figma__get_metadata",
+			"Bash(find:*)",
+			"Bash(npx tsc:*)",
+			"Bash(npx eslint:*)",
+			"Bash(echo:*)",
+			"Bash(grep:*)",
+			"Bash(npm run build:package-types:*)",
+			"Bash(npm install:*)"
+		]
+	}
+}
