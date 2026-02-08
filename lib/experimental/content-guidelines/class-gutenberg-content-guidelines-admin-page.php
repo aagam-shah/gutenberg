@@ -78,7 +78,7 @@ class Gutenberg_Content_Guidelines_Admin_Page {
 			wp_enqueue_style(
 				'gutenberg-content-guidelines',
 				gutenberg_url( 'build/styles/content-guidelines/style.css' ),
-				array( 'wp-components' ),
+				array( 'wp-components', 'wp-block-editor', 'wp-base-styles' ),
 				$asset['version']
 			);
 		}

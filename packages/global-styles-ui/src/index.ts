@@ -13,3 +13,8 @@ export { FontLibraryContext } from './font-library/context';
 export { default as InstalledFonts } from './font-library/installed-fonts';
 export { default as UploadFonts } from './font-library/upload-fonts';
 export { default as FontCollection } from './font-library/font-collection';
+
+export {
+	NavigationButtonAsItem,
+	NavigationBackButtonAsItem,
+} from './navigation-button';

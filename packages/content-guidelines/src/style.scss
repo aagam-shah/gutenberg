@@ -1,11 +1,16 @@
-@use "sass:color";
-@use "@wordpress/base-styles/breakpoints" as *;
 @use "@wordpress/base-styles/colors" as *;
-@use "@wordpress/base-styles/mixins" as *;
 @use "@wordpress/base-styles/variables" as *;
+@use "@wordpress/base-styles/mixins" as *;
+@use "@wordpress/base-styles/default-custom-properties";
+@use "@wordpress/dataviews/build-style/style.css" as dataviews;
 
 .content-guidelines-admin {
+	@include reset;
 	margin: $grid-unit-20 $grid-unit-20 $grid-unit-20 2px;
+	max-width: 680px;
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+	font-size: $default-font-size;
+	line-height: $default-line-height;
 
 	&--loading {
 		display: flex;
@@ -18,239 +23,78 @@
 
 	&__header {
 		margin-bottom: $grid-unit-30;
-	}
 
-	&__title-section {
 		.wp-heading-inline {
+			font-size: 23px;
+			font-weight: 400;
 			margin-bottom: $grid-unit-10;
+			line-height: 1.3;
+		}
+	}
+}
+
+.content-guidelines-screen-header {
+	text-transform: uppercase;
+}
+
+.content-guidelines-screen-header__description {
+	font-size: 13px;
+	color: $gray-700;
+}
+
+.content-guidelines-summary-description {
+	font-size: 12px;
+	color: $gray-700;
+	line-height: 1.4;
+}
+
+// === wp-admin resets ===
+// Use the wrapper ID to beat wp-admin's ID-based selectors.
+#content-guidelines-admin {
+	background: $white;
+	padding: $grid-unit-30;
+	margin: -1px -1px 0 0; // bleed into wp-admin chrome to cover gray bg
+
+	// Reset colors on links AND buttons (Navigator.Button renders <button>)
+	// Exclude .components-button so WordPress component buttons keep their styles.
+	a,
+	button:not(.components-button),
+	.components-item {
+		color: inherit;
+		text-decoration: none;
+
+		&:hover {
+			color: var(--wp-admin-theme-color, #3858e9);
 		}
 	}
 
-	&__layout {
-		display: grid;
-		grid-template-columns: 1fr 320px;
-		gap: $grid-unit-30;
-		margin-top: $grid-unit-20;
-
-		// Large screens: main content can grow, sidebar stays fixed.
-		@include break-huge() {
-			grid-template-columns: 1fr 380px;
-		}
-
-		// Medium screens: stack vertically.
-		@media (max-width: #{ ($break-medium - 1) }) {
-			grid-template-columns: 1fr;
-		}
-	}
-
-	&__main {
-		min-width: 0;
-	}
-
-	&__sidebar {
-		display: flex;
-		flex-direction: column;
-		gap: $grid-unit-30;
-
-		.content-guidelines-revisions,
-		.content-guidelines-import-export {
-			margin-top: 0;
-		}
-	}
-
-}
-
-.content-guidelines-publish-controls {
-	display: flex;
-	align-items: center;
-	justify-content: flex-end;
-	padding: $grid-unit-20;
-	border-radius: 2px;
-	gap: $grid-unit-15;
-
-	&__status {
-		margin-right: auto;
-		font-size: 13px;
-		font-weight: 400;
-	}
-}
-
-.block-guidelines-description {
-	display: block;
-	margin: 0 0 $grid-unit-20;
-}
-
-.block-guidelines-add-form {
-	margin-top: $grid-unit-20;
-	padding: $grid-unit-20;
-	background: $gray-100;
-	border: 1px solid $gray-300;
-}
-
-.block-guidelines-form-actions {
-	display: flex;
-	gap: $grid-unit-10;
-	margin-top: $grid-unit-15;
-}
-
-.block-guidelines-editor {
-	margin-top: $grid-unit-20;
-
-	label {
-		display: block;
-		margin-bottom: $grid-unit-10;
-	}
-}
-
-.block-guidelines-list {
-	margin: $grid-unit-20 0;
-
-	&__title {
-		font-size: 13px;
-		font-weight: 600;
-		margin: 0 0 $grid-unit-10;
-	}
-
-	&__items {
-		border: 1px solid $gray-300;
-	}
-}
-
-.block-guideline-item {
-	padding: $grid-unit-15;
-	border-bottom: 1px solid $gray-300;
-
-	&:last-child {
-		border-bottom: none;
-	}
-
-	&__header {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		margin-bottom: $grid-unit-05;
-	}
-
-	&__title {
-		font-size: 13px;
-		font-weight: 600;
-	}
-
-	&__content {
-		font-size: 13px;
-		color: $gray-700;
+	// Reset heading styles
+	h1,
+	h2,
+	h3,
+	h4 {
+		font-size: inherit;
+		font-weight: inherit;
 		margin: 0;
-		word-break: break-word;
+		padding: 0;
+		line-height: inherit;
+		color: inherit;
 	}
 
-	&__actions {
-		font-size: 13px;
-		white-space: nowrap;
+	// Item components: white bg, proper sizing, pointer cursor
+	.components-item {
+		background: $white;
+		cursor: pointer;
+		padding: $grid-unit-20;
 
-		.button-link {
-			padding: 0;
-			font-size: 13px;
-			text-decoration: none;
-			color: var(--wp-admin-theme-color, #2271b1);
-			background: none;
-			border: none;
-			cursor: pointer;
-
-			&:hover {
-				color: var(--wp-admin-theme-color-darker-10, #135e96);
-			}
-		}
-
-		.button-link-delete {
-			color: $alert-red;
-
-			&:hover {
-				color: color.adjust($alert-red, $lightness: -10%);
-			}
+		&:focus {
+			box-shadow: 0 0 0 var(--wp-admin-border-width-focus, 2px) var(--wp-admin-theme-color, #3858e9);
+			outline: none;
 		}
 	}
 
-	&__separator {
-		color: $gray-400;
-		margin: 0 $grid-unit-05;
+	// ItemGroup borders
+	.components-item-group {
+		border-color: $gray-300;
 	}
-}
-
-.content-guidelines-revisions {
-	margin-top: $grid-unit-30;
-
-	&--loading,
-	&--error {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		min-height: 100px;
-		gap: $grid-unit-10;
-	}
-
-	h3 {
-		font-size: 14px;
-		font-weight: 600;
-		margin: 0 0 $grid-unit-20;
-	}
-
-	&__empty {
-		font-size: 13px;
-		margin: 0;
-	}
-
-	.wp-list-table {
-		th,
-		td {
-			&:last-child {
-				text-align: right;
-			}
-		}
-
-		&.is-loading {
-			opacity: 0.5;
-			pointer-events: none;
-		}
-	}
-
-	&__pagination {
-		margin-top: $grid-unit-15;
-		text-align: right;
-
-		.pagination-links {
-			display: inline-flex;
-			align-items: center;
-			gap: $grid-unit-10;
-		}
-
-		.paging-input {
-			font-size: 13px;
-		}
-	}
-}
-
-.revision-item {
-	&__date {
-		white-space: nowrap;
-	}
-
-	&__date-line {
-		display: block;
-	}
-
-	&__time-line {
-		display: block;
-		color: $gray-700;
-	}
-
-	&__author {
-		font-weight: 600;
-	}
-}
-
-.content-guidelines-import-export {
-	margin-top: $grid-unit-30;
-	padding: $grid-unit-20;
-	border-radius: 2px;
 }
