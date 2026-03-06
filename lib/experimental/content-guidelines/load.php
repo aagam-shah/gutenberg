@@ -17,7 +17,7 @@ function gutenberg_register_content_guidelines_settings_submenu() {
 		__( 'Content Guidelines', 'gutenberg' ),
 		__( 'Content Guidelines', 'gutenberg' ),
 		'manage_options',
-		'content-guidelines-wp-admin',
+		'content-guidelines',
 		'gutenberg_content_guidelines_wp_admin_render_page'
 	);
 }
